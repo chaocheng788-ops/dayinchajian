@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>莫比乌斯素金镯标签 (30mm×25mm)</title>
+    <title>莫比乌斯素金镯标签 (30mm×25mm 打印版)</title>
     <!-- 飞书多维表格 SDK -->
     <script src="lark-sdk.umd.js" defer></script>
     <!-- JsBarcode 条形码生成库 -->
@@ -15,7 +15,7 @@
             box-sizing: border-box;
         }
 
-        /* 屏幕预览样式 */
+        /* 屏幕预览样式：卡片放大显示，便于操作，但打印时恢复原始尺寸 */
         body {
             background: #e9ecef;
             display: flex;
@@ -26,22 +26,21 @@
             padding: 20px;
         }
 
-        /* 标签卡片实际尺寸 30mm x 25mm */
+        /* 标签卡片 - 屏幕预览时放大到宽度150mm（约5倍），但保持比例 */
         .label-card {
-            width: 30mm;
-            height: 25mm;
+            width: 150mm;          /* 预览放大 */
+            height: 125mm;         /* 25mm * 5 = 125mm */
             background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 1.5mm 2mm;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            padding: 7.5mm 10mm;   /* 按比例放大内边距 */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            page-break-after: avoid;
-            break-inside: avoid;
-            position: relative;
+            transition: all 0.2s;
+            border-radius: 4px;
         }
 
-        /* 打印样式 */
+        /* 打印样式：恢复原始30mm×25mm尺寸 */
         @media print {
             body {
                 background: none;
@@ -56,6 +55,7 @@
                 height: 25mm;
                 page-break-after: avoid;
                 break-inside: avoid;
+                border-radius: 0;
             }
             @page {
                 size: 30mm 25mm;
@@ -68,27 +68,35 @@
 
         /* 标题区 */
         .title {
-            font-size: 3.5mm;
+            font-size: 5.5mm;      /* 预览放大时字体也相应放大 */
             font-weight: bold;
             text-align: center;
-            border-bottom: 0.3mm solid #333;
-            padding-bottom: 0.5mm;
-            margin-bottom: 1mm;
+            border-bottom: 0.5mm solid #333;
+            padding-bottom: 1mm;
+            margin-bottom: 2mm;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+        @media print {
+            .title {
+                font-size: 3.5mm;
+                border-bottom: 0.3mm solid #333;
+                padding-bottom: 0.5mm;
+                margin-bottom: 1mm;
+            }
         }
 
         /* 信息行列表 */
         .info-list {
             flex: 1;
-            font-size: 2.8mm;
-            line-height: 1.3;
+            font-size: 4.2mm;
+            line-height: 1.4;
         }
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.8mm;
+            margin-bottom: 1.2mm;
         }
         .info-label {
             font-weight: 600;
@@ -100,24 +108,47 @@
             max-width: 60%;
             word-break: break-all;
         }
+        @media print {
+            .info-list {
+                font-size: 2.8mm;
+                line-height: 1.3;
+            }
+            .info-row {
+                margin-bottom: 0.8mm;
+            }
+        }
 
         /* 条形码区域 */
         .barcode-area {
-            margin-top: 1mm;
+            margin-top: 2mm;
             text-align: center;
-            border-top: 0.2mm dashed #aaa;
-            padding-top: 0.8mm;
+            border-top: 0.4mm dashed #aaa;
+            padding-top: 1.5mm;
         }
         .barcode-area svg {
             width: 100%;
             height: auto;
-            max-height: 6mm;
+            max-height: 10mm;
         }
         .barcode-number {
-            font-size: 2mm;
+            font-size: 3mm;
             text-align: center;
-            margin-top: 0.5mm;
+            margin-top: 1mm;
             color: #555;
+        }
+        @media print {
+            .barcode-area {
+                margin-top: 1mm;
+                border-top: 0.2mm dashed #aaa;
+                padding-top: 0.8mm;
+            }
+            .barcode-area svg {
+                max-height: 6mm;
+            }
+            .barcode-number {
+                font-size: 2mm;
+                margin-top: 0.5mm;
+            }
         }
 
         /* 操作按钮组 (不打印) */
@@ -157,22 +188,6 @@
             z-index: 9999;
             display: none;
         }
-        /* 调试信息 */
-        .debug-info {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #f8f9fa;
-            border: 1px solid #ccc;
-            padding: 8px 12px;
-            font-size: 10px;
-            max-width: 300px;
-            max-height: 150px;
-            overflow: auto;
-            z-index: 9999;
-            display: none;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
@@ -181,7 +196,6 @@
         <button class="btn btn-success" onclick="printLabel()">🖨️ 打印标签</button>
     </div>
     <div id="errorTip" class="error-tip no-print"></div>
-    <div id="debugInfo" class="debug-info no-print"></div>
 
     <!-- 标签主体 -->
     <div class="label-card" id="labelCard">
@@ -201,7 +215,7 @@
 
     <script>
         // ---------- 全局变量 ----------
-        let currentRecordData = null;   // 存储当前选中的原始记录对象
+        let currentRecordData = null;
 
         function showError(msg) {
             const errDiv = document.getElementById('errorTip');
@@ -211,15 +225,7 @@
             console.error(msg);
         }
 
-        function showDebugInfo(obj) {
-            const debugDiv = document.getElementById('debugInfo');
-            debugDiv.innerHTML = `<strong>选中记录对象:</strong><pre>${JSON.stringify(obj, null, 2)}</pre>`;
-            debugDiv.style.display = 'block';
-            setTimeout(() => { debugDiv.style.display = 'none'; }, 15000);
-        }
-
         // 通用字段提取函数
-        // rule: 'firstText' 取数组第一个对象的text, 'firstValue' 取数组第一个值, 'direct' 直接返回
         function extractFieldValue(fields, fieldId, rule) {
             if (!fields || !fieldId) return '';
             const raw = fields[fieldId];
@@ -289,7 +295,6 @@
             generateBarcode('');
         }
 
-        // 格式化数字显示（保留两位小数）
         function formatNumber(val) {
             if (val === '' || val === null || val === undefined) return '';
             const num = parseFloat(val);
@@ -297,49 +302,43 @@
             return num.toFixed(2);
         }
 
-        // 根据字段映射填充标签
         function fillLabelFromRecord(record) {
             const fields = record.fields || {};
             console.log("========== 选中的记录对象 ==========");
             console.log("完整记录:", record);
             console.table(fields);
-            showDebugInfo(fields); // 显示字段对象便于核对
 
-            // 顶部标题: fldtJkkbfh 数组第一个对象的 text
+            // 顶部标题
             let title = extractFieldValue(fields, 'fldtJkkbfh', 'firstText');
             if (title) document.getElementById('titleField').innerText = title;
             else document.getElementById('titleField').innerText = '莫比乌斯素金镯';
 
-            // 主石: fldbSFpb12 数组中第一个值
+            // 主石
             let mainStone = extractFieldValue(fields, 'fldbSFpb12', 'firstValue');
             document.getElementById('mainStone').innerText = mainStone;
 
-            // 副石: fld4wV6xia (直接值或文本)
+            // 副石
             let subStone = extractFieldValue(fields, 'fld4wV6xia', 'direct');
             document.getElementById('subStone').innerText = subStone;
 
-            // 金重: fld6ebcnhJ (数值)
+            // 金重
             let goldWeight = extractFieldValue(fields, 'fld6ebcnhJ', 'number');
             document.getElementById('goldWeight').innerText = formatNumber(goldWeight);
 
-            // 件重: fldbggr87e 数组中第一个值
+            // 件重
             let itemWeight = extractFieldValue(fields, 'fldbggr87e', 'firstValue');
             document.getElementById('itemWeight').innerText = formatNumber(itemWeight);
 
-            // 件工费: fld9TBU8tn
+            // 件工费
             let laborCost = extractFieldValue(fields, 'fld9TBU8tn', 'number');
             document.getElementById('laborCost').innerText = formatNumber(laborCost);
 
-            // 产品编码: fldRKqKb64 数组第一个对象的 text，用于条形码
+            // 产品编码 -> 条形码
             let productCode = extractFieldValue(fields, 'fldRKqKb64', 'firstText');
-            if (productCode) {
-                generateBarcode(productCode);
-            } else {
-                generateBarcode('');
-            }
+            if (productCode) generateBarcode(productCode);
+            else generateBarcode('');
         }
 
-        // 选择记录并加载数据
         async function selectAndLoadData() {
             try {
                 if (!window.bitable || !window.bitable.base || !window.bitable.ui) {
@@ -394,7 +393,6 @@
             }
         }
 
-        // 打印标签
         function printLabel() {
             if (!currentRecordData) {
                 showError('请先选择一条记录再打印');
@@ -403,10 +401,9 @@
             window.print();
         }
 
-        // 页面初始化
         window.onload = function() {
             clearFields();
-            console.log("30mm×25mm标签模版已加载，字段映射已配置。");
+            console.log("标签模版已加载，屏幕预览已放大，打印尺寸仍为30mm×25mm");
         };
     </script>
 </body>
