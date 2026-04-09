@@ -15,7 +15,7 @@
             box-sizing: border-box;
         }
 
-        /* 屏幕预览样式 (模拟小尺寸，居中显示) */
+        /* 屏幕预览样式 */
         body {
             background: #e9ecef;
             display: flex;
@@ -185,7 +185,7 @@
 
     <!-- 标签主体 -->
     <div class="label-card" id="labelCard">
-        <div class="title">莫比乌斯素金镯</div>
+        <div class="title" id="titleField">莫比乌斯素金镯</div>
         <div class="info-list">
             <div class="info-row"><span class="info-label">主石</span><span class="info-value" id="mainStone"></span></div>
             <div class="info-row"><span class="info-label">副石</span><span class="info-value" id="subStone"></span></div>
@@ -203,7 +203,6 @@
         // ---------- 全局变量 ----------
         let currentRecordData = null;   // 存储当前选中的原始记录对象
 
-        // 显示错误提示
         function showError(msg) {
             const errDiv = document.getElementById('errorTip');
             errDiv.textContent = `❌ ${msg}`;
@@ -212,7 +211,6 @@
             console.error(msg);
         }
 
-        // 显示调试信息
         function showDebugInfo(obj) {
             const debugDiv = document.getElementById('debugInfo');
             debugDiv.innerHTML = `<strong>选中记录对象:</strong><pre>${JSON.stringify(obj, null, 2)}</pre>`;
@@ -220,10 +218,45 @@
             setTimeout(() => { debugDiv.style.display = 'none'; }, 15000);
         }
 
-        // 生成条形码 (使用 JsBarcode)
+        // 通用字段提取函数
+        // rule: 'firstText' 取数组第一个对象的text, 'firstValue' 取数组第一个值, 'direct' 直接返回
+        function extractFieldValue(fields, fieldId, rule) {
+            if (!fields || !fieldId) return '';
+            const raw = fields[fieldId];
+            if (raw === undefined || raw === null) return '';
+            
+            if (rule === 'firstText') {
+                if (Array.isArray(raw) && raw.length > 0) {
+                    const first = raw[0];
+                    if (first && typeof first === 'object' && first.text !== undefined) return first.text;
+                    return String(first);
+                } else if (typeof raw === 'object' && raw !== null && raw.text !== undefined) {
+                    return raw.text;
+                }
+                return String(raw);
+            }
+            else if (rule === 'firstValue') {
+                if (Array.isArray(raw) && raw.length > 0) {
+                    const first = raw[0];
+                    if (first && typeof first === 'object' && first.value !== undefined) return first.value;
+                    return String(first);
+                } else if (typeof raw === 'object' && raw !== null && raw.value !== undefined) {
+                    return raw.value;
+                }
+                return String(raw);
+            }
+            else if (rule === 'number') {
+                const num = parseFloat(raw);
+                return isNaN(num) ? '' : num;
+            }
+            else {
+                return typeof raw === 'object' ? JSON.stringify(raw) : String(raw);
+            }
+        }
+
+        // 生成条形码
         function generateBarcode(code) {
             if (!code) {
-                // 如果没有编码，清空条形码区域
                 document.getElementById('barcode').innerHTML = '';
                 document.getElementById('barcodeText').innerText = '';
                 return;
@@ -245,8 +278,9 @@
             }
         }
 
-        // 清空所有字段 (等待数据填充)
+        // 清空所有字段
         function clearFields() {
+            document.getElementById('titleField').innerText = '莫比乌斯素金镯';
             document.getElementById('mainStone').innerText = '';
             document.getElementById('subStone').innerText = '';
             document.getElementById('goldWeight').innerText = '';
@@ -255,28 +289,57 @@
             generateBarcode('');
         }
 
-        // 填充标签内容 (字段映射暂留空，只展示从记录中提取的原始数据用于调试)
-        // 注意：根据要求，字段先空着，所以这里我们只打印console，不实际填充到界面上
-        // 但为了演示效果，我们可以将选中记录的ID或第一个字段值临时显示在调试区，但标签上的字段保持空白。
-        // 完全按照需求：字段先空着，控制台打印对象。
-        function fillLabelFromRecord(record) {
-            // 清空界面字段
-            clearFields();
-            // 记录当前数据
-            currentRecordData = record;
-            // 在控制台以表格形式打印完整记录对象
-            console.log("========== 选中的记录对象 ==========");
-            console.log("完整记录:", record);
-            console.table(record);
-            // 显示调试信息浮层
-            showDebugInfo(record);
-            // 注意：这里没有映射任何字段到标签上，完全留空（除了条形码需要编码？但编码字段未知，先不做）
-            // 如果需要生成条形码，后续根据用户提供的字段映射再修改。
-            // 条形码暂时留空，因为未指定编码字段。
-            generateBarcode('');
+        // 格式化数字显示（保留两位小数）
+        function formatNumber(val) {
+            if (val === '' || val === null || val === undefined) return '';
+            const num = parseFloat(val);
+            if (isNaN(num)) return '';
+            return num.toFixed(2);
         }
 
-        // 选择记录并加载数据 (单选)
+        // 根据字段映射填充标签
+        function fillLabelFromRecord(record) {
+            const fields = record.fields || {};
+            console.log("========== 选中的记录对象 ==========");
+            console.log("完整记录:", record);
+            console.table(fields);
+            showDebugInfo(fields); // 显示字段对象便于核对
+
+            // 顶部标题: fldtJkkbfh 数组第一个对象的 text
+            let title = extractFieldValue(fields, 'fldtJkkbfh', 'firstText');
+            if (title) document.getElementById('titleField').innerText = title;
+            else document.getElementById('titleField').innerText = '莫比乌斯素金镯';
+
+            // 主石: fldbSFpb12 数组中第一个值
+            let mainStone = extractFieldValue(fields, 'fldbSFpb12', 'firstValue');
+            document.getElementById('mainStone').innerText = mainStone;
+
+            // 副石: fld4wV6xia (直接值或文本)
+            let subStone = extractFieldValue(fields, 'fld4wV6xia', 'direct');
+            document.getElementById('subStone').innerText = subStone;
+
+            // 金重: fld6ebcnhJ (数值)
+            let goldWeight = extractFieldValue(fields, 'fld6ebcnhJ', 'number');
+            document.getElementById('goldWeight').innerText = formatNumber(goldWeight);
+
+            // 件重: fldbggr87e 数组中第一个值
+            let itemWeight = extractFieldValue(fields, 'fldbggr87e', 'firstValue');
+            document.getElementById('itemWeight').innerText = formatNumber(itemWeight);
+
+            // 件工费: fld9TBU8tn
+            let laborCost = extractFieldValue(fields, 'fld9TBU8tn', 'number');
+            document.getElementById('laborCost').innerText = formatNumber(laborCost);
+
+            // 产品编码: fldRKqKb64 数组第一个对象的 text，用于条形码
+            let productCode = extractFieldValue(fields, 'fldRKqKb64', 'firstText');
+            if (productCode) {
+                generateBarcode(productCode);
+            } else {
+                generateBarcode('');
+            }
+        }
+
+        // 选择记录并加载数据
         async function selectAndLoadData() {
             try {
                 if (!window.bitable || !window.bitable.base || !window.bitable.ui) {
@@ -294,7 +357,6 @@
                 if (!tableId || !viewId) {
                     throw new Error('无法获取当前表格或视图');
                 }
-                // 调用记录选择对话框 (单选，但API返回数组)
                 const selectedIds = await window.bitable.ui.selectRecordIdList(tableId, viewId);
                 if (!selectedIds || selectedIds.length === 0) {
                     throw new Error('未选择任何记录');
@@ -307,7 +369,6 @@
                 try {
                     record = await table.getRecordById(targetId);
                 } catch (err) {
-                    // 备选方案：获取所有记录后筛选
                     const recordsData = await table.getRecordList();
                     let recordsArray = [];
                     if (Array.isArray(recordsData)) recordsArray = recordsData;
@@ -319,13 +380,13 @@
                     });
                 }
                 if (!record) throw new Error('未找到对应的记录');
-                const fields = record.fields || record;
-                // 构造包含完整信息的记录对象
+                
                 const fullRecord = {
                     recordId: targetId,
-                    fields: fields,
+                    fields: record.fields || record,
                     rawRecord: record
                 };
+                currentRecordData = fullRecord;
                 fillLabelFromRecord(fullRecord);
             } catch (err) {
                 console.error(err);
@@ -333,7 +394,7 @@
             }
         }
 
-        // 打印标签 (适配30mm×25mm)
+        // 打印标签
         function printLabel() {
             if (!currentRecordData) {
                 showError('请先选择一条记录再打印');
@@ -345,7 +406,7 @@
         // 页面初始化
         window.onload = function() {
             clearFields();
-            console.log("标签模版已加载，等待选择记录。打印尺寸30mm×25mm");
+            console.log("30mm×25mm标签模版已加载，字段映射已配置。");
         };
     </script>
 </body>
