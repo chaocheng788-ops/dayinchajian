@@ -7,13 +7,7 @@
     <script src="lark-sdk.umd.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* 屏幕预览样式：放大显示便于操作 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #e9ecef;
             display: flex;
@@ -22,8 +16,6 @@
             font-family: 'Arial', 'Microsoft YaHei', sans-serif;
             padding: 20px;
         }
-
-        /* 预览时标签卡片放大到宽度150mm，高度125mm，可滚动查看多个标签 */
         .label-card {
             width: 150mm;
             height: 125mm;
@@ -37,59 +29,26 @@
             border-radius: 4px;
             page-break-after: avoid;
         }
-
-        /* 打印样式：恢复30mm×25mm原始尺寸，极小字体确保不溢出 */
         @media print {
-            body {
-                background: none;
-                padding: 0;
-                margin: 0;
-            }
+            body { background: none; padding: 0; margin: 0; }
             .label-card {
                 box-shadow: none;
                 margin: 0;
                 padding: 1.2mm 1.5mm;
                 width: 30mm;
                 height: 25mm;
-                page-break-after: always;  /* 每个标签分页 */
+                page-break-after: always;
                 border-radius: 0;
             }
-            @page {
-                size: 30mm 25mm;
-                margin: 0mm;
-            }
-            .no-print {
-                display: none !important;
-            }
-            /* 打印时强制小字体 */
-            .title {
-                font-size: 2.8mm !important;
-                border-bottom: 0.2mm solid #333 !important;
-                padding-bottom: 0.3mm !important;
-                margin-bottom: 0.8mm !important;
-            }
-            .info-list {
-                font-size: 2.2mm !important;
-                line-height: 1.2 !important;
-            }
-            .info-row {
-                margin-bottom: 0.5mm !important;
-            }
-            .barcode-area {
-                margin-top: 0.5mm !important;
-                padding-top: 0.5mm !important;
-                border-top: 0.2mm dashed #aaa !important;
-            }
-            .barcode-area svg {
-                max-height: 4mm !important;
-            }
-            .barcode-number {
-                font-size: 1.8mm !important;
-                margin-top: 0.3mm !important;
-            }
+            @page { size: 30mm 25mm; margin: 0mm; }
+            .no-print { display: none !important; }
+            .title { font-size: 2.8mm !important; border-bottom: 0.2mm solid #333 !important; padding-bottom: 0.3mm !important; margin-bottom: 0.8mm !important; }
+            .info-list { font-size: 2.2mm !important; line-height: 1.2 !important; }
+            .info-row { margin-bottom: 0.5mm !important; }
+            .barcode-area { margin-top: 0.5mm !important; padding-top: 0.5mm !important; border-top: 0.2mm dashed #aaa !important; }
+            .barcode-area svg { max-height: 4mm !important; }
+            .barcode-number { font-size: 1.8mm !important; margin-top: 0.3mm !important; }
         }
-
-        /* 屏幕预览时的样式（较大） */
         .title {
             font-size: 5.5mm;
             font-weight: bold;
@@ -138,8 +97,6 @@
             margin-top: 1mm;
             color: #555;
         }
-
-        /* 操作按钮组 */
         .btn-group {
             position: fixed;
             top: 20px;
@@ -158,12 +115,8 @@
             background: #007fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .btn-success {
-            background: #2ecc71;
-        }
-        .btn:hover {
-            opacity: 0.9;
-        }
+        .btn-success { background: #2ecc71; }
+        .btn:hover { opacity: 0.9; }
         .error-tip {
             position: fixed;
             bottom: 20px;
@@ -184,13 +137,10 @@
         <button class="btn btn-success" onclick="printLabels()">🖨️ 批量打印</button>
     </div>
     <div id="errorTip" class="error-tip no-print"></div>
-
-    <!-- 标签容器，动态生成多个标签 -->
     <div id="labelsContainer"></div>
 
     <script>
-        // ---------- 全局变量 ----------
-        let selectedRecordsData = [];   // 存储选中的多条记录（原始字段对象）
+        let selectedRecordsData = [];
 
         function showError(msg) {
             const errDiv = document.getElementById('errorTip');
@@ -200,37 +150,28 @@
             console.error(msg);
         }
 
-        // 通用字段提取函数
         function extractFieldValue(fields, fieldId, rule) {
             if (!fields || !fieldId) return '';
             const raw = fields[fieldId];
             if (raw === undefined || raw === null) return '';
-            
             if (rule === 'firstText') {
                 if (Array.isArray(raw) && raw.length > 0) {
                     const first = raw[0];
                     if (first && typeof first === 'object' && first.text !== undefined) return first.text;
                     return String(first);
-                } else if (typeof raw === 'object' && raw !== null && raw.text !== undefined) {
-                    return raw.text;
-                }
+                } else if (typeof raw === 'object' && raw !== null && raw.text !== undefined) return raw.text;
                 return String(raw);
-            }
-            else if (rule === 'firstValue') {
+            } else if (rule === 'firstValue') {
                 if (Array.isArray(raw) && raw.length > 0) {
                     const first = raw[0];
                     if (first && typeof first === 'object' && first.value !== undefined) return first.value;
                     return String(first);
-                } else if (typeof raw === 'object' && raw !== null && raw.value !== undefined) {
-                    return raw.value;
-                }
+                } else if (typeof raw === 'object' && raw !== null && raw.value !== undefined) return raw.value;
                 return String(raw);
-            }
-            else if (rule === 'number') {
+            } else if (rule === 'number') {
                 const num = parseFloat(raw);
                 return isNaN(num) ? '' : num;
-            }
-            else {
+            } else {
                 return typeof raw === 'object' ? JSON.stringify(raw) : String(raw);
             }
         }
@@ -238,57 +179,45 @@
         function formatNumber(val) {
             if (val === '' || val === null || val === undefined) return '';
             const num = parseFloat(val);
-            if (isNaN(num)) return '';
-            return num.toFixed(2);
+            return isNaN(num) ? '' : num.toFixed(2);
         }
 
-        // 生成单个标签的HTML（不包含外层容器，仅 .label-card）
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+        }
+
         function generateLabelHTML(fields, index) {
-            // 提取字段
-            let title = extractFieldValue(fields, 'fldtJkkbfh', 'firstText');
-            if (!title) title = '莫比乌斯素金镯';
-            
+            let title = extractFieldValue(fields, 'fldtJkkbfh', 'firstText') || '莫比乌斯素金镯';
             let mainStone = extractFieldValue(fields, 'fldbSFpb12', 'firstValue');
             let subStone = extractFieldValue(fields, 'fld4wV6xia', 'direct');
             let goldWeight = extractFieldValue(fields, 'fld6ebcnhJ', 'number');
             let itemWeight = extractFieldValue(fields, 'fldbggr87e', 'firstValue');
             let laborCost = extractFieldValue(fields, 'fld9TBU8tn', 'number');
             let productCode = extractFieldValue(fields, 'fldRKqKb64', 'firstText');
-            
-            // 生成条形码（需要在DOM插入后渲染，这里先留空svg，后续统一渲染）
-            // 为了便于条形码渲染，我们给每个标签的条形码svg一个唯一id
-            const barcodeId = `barcode_${Date.now()}_${index}`;
-            
-            const html = `
-                <div class="label-card" data-barcode-id="${barcodeId}" data-barcode-code="${escapeHtml(productCode)}">
-                    <div class="title">${escapeHtml(title)}</div>
-                    <div class="info-list">
-                        <div class="info-row"><span class="info-label">主石</span><span class="info-value">${escapeHtml(mainStone)}</span></div>
-                        <div class="info-row"><span class="info-label">副石</span><span class="info-value">${escapeHtml(subStone)}</span></div>
-                        <div class="info-row"><span class="info-label">金重</span><span class="info-value">${formatNumber(goldWeight)}</span></div>
-                        <div class="info-row"><span class="info-label">件重</span><span class="info-value">${formatNumber(itemWeight)}</span></div>
-                        <div class="info-row"><span class="info-label">件工费</span><span class="info-value">${formatNumber(laborCost)}</span></div>
+            const barcodeId = `barcode_${Date.now()}_${index}_${Math.random()}`;
+            return {
+                html: `
+                    <div class="label-card" data-barcode-id="${barcodeId}" data-barcode-code="${escapeHtml(productCode)}">
+                        <div class="title">${escapeHtml(title)}</div>
+                        <div class="info-list">
+                            <div class="info-row"><span class="info-label">主石</span><span class="info-value">${escapeHtml(mainStone)}</span></div>
+                            <div class="info-row"><span class="info-label">副石</span><span class="info-value">${escapeHtml(subStone)}</span></div>
+                            <div class="info-row"><span class="info-label">金重</span><span class="info-value">${formatNumber(goldWeight)}</span></div>
+                            <div class="info-row"><span class="info-label">件重</span><span class="info-value">${formatNumber(itemWeight)}</span></div>
+                            <div class="info-row"><span class="info-label">件工费</span><span class="info-value">${formatNumber(laborCost)}</span></div>
+                        </div>
+                        <div class="barcode-area">
+                            <svg id="${barcodeId}"></svg>
+                            <div class="barcode-number">${escapeHtml(productCode)}</div>
+                        </div>
                     </div>
-                    <div class="barcode-area">
-                        <svg id="${barcodeId}"></svg>
-                        <div class="barcode-number">${escapeHtml(productCode)}</div>
-                    </div>
-                </div>
-            `;
-            return { html, barcodeId, productCode };
+                `,
+                barcodeId,
+                productCode
+            };
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>]/g, function(m){
-                if(m==='&') return '&amp;';
-                if(m==='<') return '&lt;';
-                if(m==='>') return '&gt;';
-                return m;
-            });
-        }
-
-        // 渲染所有标签到页面，并生成条形码
         function renderLabels(recordsArray) {
             const container = document.getElementById('labelsContainer');
             container.innerHTML = '';
@@ -296,40 +225,28 @@
                 container.innerHTML = '<div style="text-align:center; padding:20px;">暂无选中记录，请点击「选择记录」</div>';
                 return;
             }
-            
             let combinedHtml = '';
             const barcodeItems = [];
             for (let i = 0; i < recordsArray.length; i++) {
-                const fields = recordsArray[i].fields || recordsArray[i];
+                const fields = recordsArray[i].fields;
                 const { html, barcodeId, productCode } = generateLabelHTML(fields, i);
                 combinedHtml += html;
                 barcodeItems.push({ id: barcodeId, code: productCode });
             }
             container.innerHTML = combinedHtml;
-            
-            // 生成条形码
             barcodeItems.forEach(item => {
                 if (item.code && item.code.trim()) {
                     try {
-                        JsBarcode(`#${item.id}`, item.code, {
-                            format: "CODE128",
-                            width: 0.6,
-                            height: 4,
-                            displayValue: false,
-                            fontSize: 2,
-                            margin: 0
-                        });
+                        JsBarcode(`#${item.id}`, item.code, { format: "CODE128", width: 0.6, height: 4, displayValue: false, margin: 0 });
                     } catch(e) { console.warn("条形码生成失败", e); }
                 }
             });
         }
 
-        // 选择记录（多选）
+        // 核心：选择记录并匹配（修复ID匹配问题）
         async function selectAndLoadData() {
             try {
-                if (!window.bitable || !window.bitable.base || !window.bitable.ui) {
-                    throw new Error('飞书SDK未加载，请确保在飞书多维表格环境中运行');
-                }
+                if (!window.bitable || !window.bitable.base || !window.bitable.ui) throw new Error('飞书SDK未加载');
                 const base = window.bitable.base;
                 const selection = await base.getSelection();
                 let tableId = selection?.tableId;
@@ -339,51 +256,73 @@
                     tableId = activeTable?.id;
                     viewId = activeTable?.activeViewId;
                 }
-                if (!tableId || !viewId) {
-                    throw new Error('无法获取当前表格或视图');
-                }
-                // 多选记录
+                if (!tableId || !viewId) throw new Error('无法获取当前表格或视图');
+                
+                // 多选记录ID
                 const selectedIds = await window.bitable.ui.selectRecordIdList(tableId, viewId);
-                if (!selectedIds || selectedIds.length === 0) {
-                    throw new Error('未选择任何记录');
-                }
-                console.log(`选中 ${selectedIds.length} 条记录，ID:`, selectedIds);
+                if (!selectedIds || selectedIds.length === 0) throw new Error('未选择任何记录');
+                console.log('选中的ID列表:', selectedIds);
                 
                 const table = await base.getActiveTable();
-                // 批量获取记录详情
-                let recordsData = await table.getRecordList();
-                let recordsArray = [];
-                if (Array.isArray(recordsData)) recordsArray = recordsData;
-                else if (recordsData?.recordList) recordsArray = recordsData.recordList;
-                else if (recordsData?.records) recordsArray = recordsData.records;
-                
-                // 筛选出选中的记录
-                const selectedRecords = [];
-                for (const rec of recordsArray) {
-                    const recordId = rec.recordId || rec.id || rec._id;
-                    if (selectedIds.includes(recordId)) {
-                        const fields = rec.fields || rec;
-                        selectedRecords.push({ recordId, fields });
+                // 方法1：通过 getRecordById 逐个获取（最可靠）
+                let records = [];
+                for (let id of selectedIds) {
+                    try {
+                        // 确保ID转为字符串再获取（部分API要求字符串）
+                        let rec = await table.getRecordById(String(id));
+                        if (rec) {
+                            records.push({ recordId: String(id), fields: rec.fields || rec });
+                        } else {
+                            console.warn(`getRecordById 返回空: ${id}`);
+                        }
+                    } catch(e) {
+                        console.warn(`getRecordById 失败 ${id}:`, e.message);
                     }
                 }
-                if (selectedRecords.length === 0) throw new Error('未找到对应记录');
                 
-                selectedRecordsData = selectedRecords;
-                // 在控制台打印所有选中记录的字段
-                console.log("========== 选中的记录列表 ==========");
-                selectedRecords.forEach((rec, idx) => {
-                    console.log(`记录 ${idx+1} (ID: ${rec.recordId}):`);
-                    console.table(rec.fields);
+                // 如果逐个获取的数量与选中数量不一致，尝试从 getRecordList 中补全
+                if (records.length !== selectedIds.length) {
+                    console.log('部分记录未通过getRecordById获取，尝试从列表筛选补全');
+                    const recordsData = await table.getRecordList();
+                    let recordsArray = [];
+                    if (Array.isArray(recordsData)) recordsArray = recordsData;
+                    else if (recordsData?.recordList) recordsArray = recordsData.recordList;
+                    else if (recordsData?.records) recordsArray = recordsData.records;
+                    
+                    // 已获取的记录ID集合
+                    const existingIds = new Set(records.map(r => String(r.recordId)));
+                    for (let rec of recordsArray) {
+                        // 提取记录ID（兼容多种字段名）
+                        let rid = rec.recordId ?? rec.id ?? rec._id ?? rec.record_id;
+                        if (rid) {
+                            rid = String(rid);
+                            if (selectedIds.some(sid => String(sid) === rid) && !existingIds.has(rid)) {
+                                records.push({ recordId: rid, fields: rec.fields || rec });
+                                existingIds.add(rid);
+                            }
+                        }
+                    }
+                }
+                
+                if (records.length === 0) throw new Error('未找到对应的记录，请检查ID匹配');
+                if (records.length !== selectedIds.length) {
+                    console.warn(`期望 ${selectedIds.length} 条，实际匹配 ${records.length} 条`);
+                }
+                
+                selectedRecordsData = records;
+                console.log(`成功匹配 ${records.length} 条记录`);
+                records.forEach((r, idx) => {
+                    console.log(`记录 ${idx+1} (ID: ${r.recordId}) 字段:`);
+                    console.table(r.fields);
                 });
-                renderLabels(selectedRecords);
-                showError(`成功加载 ${selectedRecords.length} 条记录，可批量打印`);
+                renderLabels(records);
+                showError(`成功加载 ${records.length} 条记录，可批量打印`);
             } catch (err) {
                 console.error(err);
                 showError(err.message);
             }
         }
 
-        // 批量打印
         function printLabels() {
             if (!selectedRecordsData.length) {
                 showError('请先选择记录');
@@ -392,9 +331,8 @@
             window.print();
         }
 
-        window.onload = function() {
+        window.onload = () => {
             document.getElementById('labelsContainer').innerHTML = '<div style="text-align:center; padding:20px;">请点击「选择记录」加载标签</div>';
-            console.log("标签模版已加载，支持批量打印");
         };
     </script>
 </body>
