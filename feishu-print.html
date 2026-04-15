@@ -7,7 +7,13 @@
     <script src="lark-sdk.umd.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 屏幕预览样式：放大显示便于操作 */
         body {
             background: #e9ecef;
             display: flex;
@@ -16,6 +22,8 @@
             font-family: 'Arial', 'Microsoft YaHei', sans-serif;
             padding: 20px;
         }
+
+        /* 预览时标签卡片放大到宽度150mm，高度125mm */
         .label-card {
             width: 150mm;
             height: 125mm;
@@ -29,8 +37,14 @@
             border-radius: 4px;
             page-break-after: avoid;
         }
+
+        /* 打印样式：恢复30mm×25mm原始尺寸，竖排 */
         @media print {
-            body { background: none; padding: 0; margin: 0; }
+            body {
+                background: none;
+                padding: 0;
+                margin: 0;
+            }
             .label-card {
                 box-shadow: none;
                 margin: 0;
@@ -39,16 +53,49 @@
                 height: 25mm;
                 page-break-after: always;
                 border-radius: 0;
+                /* 确保内容垂直排列 */
+                display: flex;
+                flex-direction: column;
             }
-            @page { size: 30mm 25mm; margin: 0mm; }
-            .no-print { display: none !important; }
-            .title { font-size: 2.8mm !important; border-bottom: 0.2mm solid #333 !important; padding-bottom: 0.3mm !important; margin-bottom: 0.8mm !important; }
-            .info-list { font-size: 2.2mm !important; line-height: 1.2 !important; }
-            .info-row { margin-bottom: 0.5mm !important; }
-            .barcode-area { margin-top: 0.5mm !important; padding-top: 0.5mm !important; border-top: 0.2mm dashed #aaa !important; }
-            .barcode-area svg { max-height: 4mm !important; }
-            .barcode-number { font-size: 1.8mm !important; margin-top: 0.3mm !important; }
+            @page {
+                size: 30mm 25mm;
+                margin: 0mm;
+                /* 部分浏览器支持 */
+                page-orientation: upright;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* 强制缩小字体以适应竖排小尺寸 */
+            .title {
+                font-size: 2.8mm !important;
+                border-bottom: 0.2mm solid #333 !important;
+                padding-bottom: 0.3mm !important;
+                margin-bottom: 0.8mm !important;
+            }
+            .info-list {
+                font-size: 2.2mm !important;
+                line-height: 1.2 !important;
+            }
+            .info-row {
+                margin-bottom: 0.5mm !important;
+            }
+            .barcode-area {
+                margin-top: 0.5mm !important;
+                padding-top: 0.5mm !important;
+                border-top: 0.2mm dashed #aaa !important;
+            }
+            .barcode-area svg {
+                max-height: 5mm !important;
+                width: 100% !important;
+            }
+            .barcode-number {
+                font-size: 1.8mm !important;
+                margin-top: 0.3mm !important;
+            }
         }
+
+        /* 屏幕预览时的样式（较大） */
         .title {
             font-size: 5.5mm;
             font-weight: bold;
@@ -97,6 +144,7 @@
             margin-top: 1mm;
             color: #555;
         }
+
         .btn-group {
             position: fixed;
             top: 20px;
@@ -115,8 +163,12 @@
             background: #007fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .btn-success { background: #2ecc71; }
-        .btn:hover { opacity: 0.9; }
+        .btn-success {
+            background: #2ecc71;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
         .error-tip {
             position: fixed;
             bottom: 20px;
@@ -195,7 +247,8 @@
             let itemWeight = extractFieldValue(fields, 'fldbggr87e', 'firstValue');
             let laborCost = extractFieldValue(fields, 'fld9TBU8tn', 'number');
             let productCode = extractFieldValue(fields, 'fldRKqKb64', 'firstText');
-            const barcodeId = `barcode_${Date.now()}_${index}_${Math.random()}`;
+            // 为每个条形码生成唯一ID（确保不重复）
+            const barcodeId = `barcode_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 6)}`;
             return {
                 html: `
                     <div class="label-card" data-barcode-id="${barcodeId}" data-barcode-code="${escapeHtml(productCode)}">
@@ -218,6 +271,7 @@
             };
         }
 
+        // 渲染所有标签，并生成条形码（确保扫码枪可读）
         function renderLabels(recordsArray) {
             const container = document.getElementById('labelsContainer');
             container.innerHTML = '';
@@ -234,16 +288,27 @@
                 barcodeItems.push({ id: barcodeId, code: productCode });
             }
             container.innerHTML = combinedHtml;
-            barcodeItems.forEach(item => {
-                if (item.code && item.code.trim()) {
-                    try {
-                        JsBarcode(`#${item.id}`, item.code, { format: "CODE128", width: 0.6, height: 4, displayValue: false, margin: 0 });
-                    } catch(e) { console.warn("条形码生成失败", e); }
-                }
-            });
+            // 延迟生成条形码，确保DOM已完全渲染
+            setTimeout(() => {
+                barcodeItems.forEach(item => {
+                    if (item.code && item.code.trim()) {
+                        try {
+                            JsBarcode(`#${item.id}`, item.code, {
+                                format: "CODE128",
+                                width: 1.0,          // 增加宽度，更清晰
+                                height: 6,           // 增加高度，易于扫描
+                                displayValue: false,
+                                fontSize: 2,
+                                margin: 0
+                            });
+                            console.log(`条形码生成成功: ${item.code}`);
+                        } catch(e) { console.warn("条形码生成失败", e); }
+                    }
+                });
+            }, 50);
         }
 
-        // 核心：选择记录并匹配（修复ID匹配问题）
+        // 选择记录（多选）并匹配ID
         async function selectAndLoadData() {
             try {
                 if (!window.bitable || !window.bitable.base || !window.bitable.ui) throw new Error('飞书SDK未加载');
@@ -258,17 +323,15 @@
                 }
                 if (!tableId || !viewId) throw new Error('无法获取当前表格或视图');
                 
-                // 多选记录ID
                 const selectedIds = await window.bitable.ui.selectRecordIdList(tableId, viewId);
                 if (!selectedIds || selectedIds.length === 0) throw new Error('未选择任何记录');
                 console.log('选中的ID列表:', selectedIds);
                 
                 const table = await base.getActiveTable();
-                // 方法1：通过 getRecordById 逐个获取（最可靠）
+                // 优先通过 getRecordById 逐个获取
                 let records = [];
                 for (let id of selectedIds) {
                     try {
-                        // 确保ID转为字符串再获取（部分API要求字符串）
                         let rec = await table.getRecordById(String(id));
                         if (rec) {
                             records.push({ recordId: String(id), fields: rec.fields || rec });
@@ -280,19 +343,17 @@
                     }
                 }
                 
-                // 如果逐个获取的数量与选中数量不一致，尝试从 getRecordList 中补全
+                // 如果数量不足，从 getRecordList 中补全
                 if (records.length !== selectedIds.length) {
-                    console.log('部分记录未通过getRecordById获取，尝试从列表筛选补全');
+                    console.log('尝试从记录列表补全缺失记录');
                     const recordsData = await table.getRecordList();
                     let recordsArray = [];
                     if (Array.isArray(recordsData)) recordsArray = recordsData;
                     else if (recordsData?.recordList) recordsArray = recordsData.recordList;
                     else if (recordsData?.records) recordsArray = recordsData.records;
                     
-                    // 已获取的记录ID集合
                     const existingIds = new Set(records.map(r => String(r.recordId)));
                     for (let rec of recordsArray) {
-                        // 提取记录ID（兼容多种字段名）
                         let rid = rec.recordId ?? rec.id ?? rec._id ?? rec.record_id;
                         if (rid) {
                             rid = String(rid);
