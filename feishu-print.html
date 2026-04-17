@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>莫比乌斯素金镯标签 (批量打印版)</title>
+    <title>莫比乌斯素金镯标签 (竖版批量打印)</title>
     <script src="lark-sdk.umd.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
@@ -13,7 +13,7 @@
             box-sizing: border-box;
         }
 
-        /* 屏幕预览样式：放大显示便于操作 */
+        /* 屏幕预览样式：放大显示 */
         body {
             background: #e9ecef;
             display: flex;
@@ -23,13 +23,13 @@
             padding: 20px;
         }
 
-        /* 预览时标签卡片放大到宽度150mm，高度125mm */
+        /* 预览时标签卡片放大 (保持竖版比例) */
         .label-card {
-            width: 150mm;
-            height: 125mm;
+            width: 125mm;   /* 宽度对应打印时的25mm *5 */
+            height: 150mm;  /* 高度对应打印时的30mm *5 */
             background: white;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            padding: 7.5mm 10mm;
+            padding: 6mm 8mm;
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
@@ -38,7 +38,7 @@
             page-break-after: avoid;
         }
 
-        /* 打印样式：恢复30mm×25mm原始尺寸，竖排 */
+        /* 打印样式：竖版 25mm × 30mm */
         @media print {
             body {
                 background: none;
@@ -49,73 +49,74 @@
                 box-shadow: none;
                 margin: 0;
                 padding: 1.2mm 1.5mm;
-                width: 30mm;
-                height: 25mm;
+                width: 25mm;
+                height: 30mm;
                 page-break-after: always;
                 border-radius: 0;
-                /* 确保内容垂直排列 */
                 display: flex;
                 flex-direction: column;
             }
             @page {
-                size: 30mm 25mm;
+                size: 25mm 30mm;   /* 宽度25mm，高度30mm（竖版） */
                 margin: 0mm;
-                /* 部分浏览器支持 */
-                page-orientation: upright;
+                page-orientation: portrait;
             }
             .no-print {
                 display: none !important;
             }
-            /* 强制缩小字体以适应竖排小尺寸 */
+            /* 标题：去掉横杠 */
             .title {
-                font-size: 2.8mm !important;
-                border-bottom: 0.2mm solid #333 !important;
-                padding-bottom: 0.3mm !important;
-                margin-bottom: 0.8mm !important;
+                font-size: 2.6mm !important;
+                font-weight: bold;
+                text-align: center;
+                border-bottom: none !important;
+                padding-bottom: 0.2mm !important;
+                margin-bottom: 0.6mm !important;
             }
             .info-list {
-                font-size: 2.2mm !important;
+                font-size: 2.0mm !important;
                 line-height: 1.2 !important;
             }
             .info-row {
-                margin-bottom: 0.5mm !important;
+                margin-bottom: 0.4mm !important;
             }
             .barcode-area {
                 margin-top: 0.5mm !important;
-                padding-top: 0.5mm !important;
+                padding-top: 0.3mm !important;
                 border-top: 0.2mm dashed #aaa !important;
             }
             .barcode-area svg {
-                max-height: 5mm !important;
+                max-height: 5.5mm !important;
                 width: 100% !important;
             }
             .barcode-number {
-                font-size: 1.8mm !important;
-                margin-top: 0.3mm !important;
+                font-size: 1.6mm !important;
+                margin-top: 0.2mm !important;
+                text-align: center;
             }
         }
 
-        /* 屏幕预览时的样式（较大） */
+        /* 屏幕预览样式 */
         .title {
-            font-size: 5.5mm;
+            font-size: 5mm;
             font-weight: bold;
             text-align: center;
-            border-bottom: 0.5mm solid #333;
-            padding-bottom: 1mm;
-            margin-bottom: 2mm;
+            border-bottom: none;  /* 去掉横杠 */
+            padding-bottom: 0.5mm;
+            margin-bottom: 1.5mm;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .info-list {
             flex: 1;
-            font-size: 4.2mm;
+            font-size: 3.8mm;
             line-height: 1.4;
         }
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 1.2mm;
+            margin-bottom: 1mm;
         }
         .info-label {
             font-weight: 600;
@@ -128,20 +129,20 @@
             word-break: break-all;
         }
         .barcode-area {
-            margin-top: 2mm;
+            margin-top: 1.5mm;
             text-align: center;
-            border-top: 0.4mm dashed #aaa;
-            padding-top: 1.5mm;
+            border-top: 0.3mm dashed #aaa;
+            padding-top: 1mm;
         }
         .barcode-area svg {
             width: 100%;
             height: auto;
-            max-height: 10mm;
+            max-height: 8mm;
         }
         .barcode-number {
-            font-size: 3mm;
+            font-size: 2.5mm;
             text-align: center;
-            margin-top: 1mm;
+            margin-top: 0.5mm;
             color: #555;
         }
 
@@ -247,7 +248,6 @@
             let itemWeight = extractFieldValue(fields, 'fldbggr87e', 'firstValue');
             let laborCost = extractFieldValue(fields, 'fld9TBU8tn', 'number');
             let productCode = extractFieldValue(fields, 'fldRKqKb64', 'firstText');
-            // 为每个条形码生成唯一ID（确保不重复）
             const barcodeId = `barcode_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 6)}`;
             return {
                 html: `
@@ -271,7 +271,6 @@
             };
         }
 
-        // 渲染所有标签，并生成条形码（确保扫码枪可读）
         function renderLabels(recordsArray) {
             const container = document.getElementById('labelsContainer');
             container.innerHTML = '';
@@ -288,15 +287,14 @@
                 barcodeItems.push({ id: barcodeId, code: productCode });
             }
             container.innerHTML = combinedHtml;
-            // 延迟生成条形码，确保DOM已完全渲染
             setTimeout(() => {
                 barcodeItems.forEach(item => {
                     if (item.code && item.code.trim()) {
                         try {
                             JsBarcode(`#${item.id}`, item.code, {
                                 format: "CODE128",
-                                width: 1.0,          // 增加宽度，更清晰
-                                height: 6,           // 增加高度，易于扫描
+                                width: 1.2,
+                                height: 8,
                                 displayValue: false,
                                 fontSize: 2,
                                 margin: 0
@@ -308,7 +306,6 @@
             }, 50);
         }
 
-        // 选择记录（多选）并匹配ID
         async function selectAndLoadData() {
             try {
                 if (!window.bitable || !window.bitable.base || !window.bitable.ui) throw new Error('飞书SDK未加载');
@@ -328,7 +325,6 @@
                 console.log('选中的ID列表:', selectedIds);
                 
                 const table = await base.getActiveTable();
-                // 优先通过 getRecordById 逐个获取
                 let records = [];
                 for (let id of selectedIds) {
                     try {
@@ -343,7 +339,6 @@
                     }
                 }
                 
-                // 如果数量不足，从 getRecordList 中补全
                 if (records.length !== selectedIds.length) {
                     console.log('尝试从记录列表补全缺失记录');
                     const recordsData = await table.getRecordList();
