@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>莫比乌斯素金镯标签 (竖版批量打印)</title>
+    <title>莫比乌斯素金镯标签 (竖版批量打印-紧凑条码)</title>
     <script src="lark-sdk.umd.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
@@ -13,7 +13,7 @@
             box-sizing: border-box;
         }
 
-        /* 屏幕预览样式：放大显示 */
+        /* 屏幕预览样式 */
         body {
             background: #e9ecef;
             display: flex;
@@ -23,10 +23,10 @@
             padding: 20px;
         }
 
-        /* 预览时标签卡片放大 (保持竖版比例) */
+        /* 预览时标签卡片放大 (竖版比例) */
         .label-card {
-            width: 125mm;   /* 宽度对应打印时的25mm *5 */
-            height: 150mm;  /* 高度对应打印时的30mm *5 */
+            width: 125mm;
+            height: 150mm;
             background: white;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             padding: 6mm 8mm;
@@ -57,14 +57,13 @@
                 flex-direction: column;
             }
             @page {
-                size: 25mm 30mm;   /* 宽度25mm，高度30mm（竖版） */
+                size: 25mm 30mm;
                 margin: 0mm;
                 page-orientation: portrait;
             }
             .no-print {
                 display: none !important;
             }
-            /* 标题：去掉横杠 */
             .title {
                 font-size: 2.6mm !important;
                 font-weight: bold;
@@ -78,15 +77,15 @@
                 line-height: 1.2 !important;
             }
             .info-row {
-                margin-bottom: 0.4mm !important;
+                margin-bottom: 0.2mm !important;  /* 减小行间距 */
             }
             .barcode-area {
-                margin-top: 0.5mm !important;
-                padding-top: 0.3mm !important;
+                margin-top: 0.2mm !important;    /* 减小上边距 */
+                padding-top: 0.1mm !important;   /* 减小内边距 */
                 border-top: 0.2mm dashed #aaa !important;
             }
             .barcode-area svg {
-                max-height: 5.5mm !important;
+                max-height: 7mm !important;      /* 增加条码高度 */
                 width: 100% !important;
             }
             .barcode-number {
@@ -101,7 +100,7 @@
             font-size: 5mm;
             font-weight: bold;
             text-align: center;
-            border-bottom: none;  /* 去掉横杠 */
+            border-bottom: none;
             padding-bottom: 0.5mm;
             margin-bottom: 1.5mm;
             white-space: nowrap;
@@ -294,7 +293,7 @@
                             JsBarcode(`#${item.id}`, item.code, {
                                 format: "CODE128",
                                 width: 1.2,
-                                height: 8,
+                                height: 12,          // 增加条码高度（打印时会被CSS限制最大7mm，但会保持清晰）
                                 displayValue: false,
                                 fontSize: 2,
                                 margin: 0
