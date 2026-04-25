@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>莫比乌斯素金镯标签 (最终平衡版)</title>
+    <title>莫比乌斯素金镯标签 (右移2mm 行距0.45mm)</title>
     <script src="lark-sdk.umd.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
@@ -37,7 +37,7 @@
             .label-card {
                 box-shadow: none;
                 margin: 0;
-                padding: 1mm 1.5mm 1mm 2mm;  /* 左内边距增加，整体右移 */
+                padding: 1mm 1.5mm 1mm 3.5mm;  /* 左内边距增加到3.5mm (相比原来增加2mm) */
                 width: 25mm;
                 height: 30mm;
                 page-break-after: always;
@@ -53,56 +53,54 @@
             }
             .no-print { display: none !important; }
             .title {
-                font-size: 2.4mm !important;    /* 字号稍大 */
+                font-size: 2.4mm;
                 font-weight: bold;
                 text-align: center;
-                border-bottom: none !important;
-                padding-bottom: 0.1mm !important;
-                margin-bottom: 0.4mm !important;
+                border-bottom: none;
+                padding-bottom: 0.1mm;
+                margin-bottom: 0.4mm;
             }
             .info-list {
-                font-size: 2.0mm !important;    /* 字号加大 */
-                line-height: 1.2 !important;
+                font-size: 2.0mm;
+                line-height: 1.2;
             }
             .info-row {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 0.35mm !important;  /* 行间距加大 */
+                margin-bottom: 0.45mm !important;  /* 行距增加到0.45mm */
                 padding: 0 0.5mm;
             }
             .info-label {
                 font-weight: 600;
-                padding-left: 0.8mm !important;   /* 向右偏移 */
-                letter-spacing: -0.1mm;
+                padding-left: 0.8mm;
             }
             .info-value {
                 text-align: right;
-                padding-right: 0.8mm !important;
+                padding-right: 0.8mm;
             }
-            /* 压缩字段名与值之间的空白：利用flex，但已通过padding减少空隙 */
             .barcode-area {
-                margin-top: 0.2mm !important;      /* 稍微增加顶部间距，利用空白 */
-                padding-top: 0mm !important;
-                border-top: 0.1mm dashed #aaa !important;
-                text-align: center !important;
+                margin-top: 0.2mm;
+                padding-top: 0mm;
+                border-top: 0.1mm dashed #aaa;
+                text-align: center;
             }
             .barcode-area svg {
-                max-width: 85% !important;
-                max-height: 6.5mm !important;
-                width: auto !important;
-                height: auto !important;
+                max-width: 85%;
+                max-height: 6.5mm;
+                width: auto;
+                height: auto;
                 display: block;
                 margin: 0 auto;
             }
             .barcode-number {
-                font-size: 1.4mm !important;
-                margin-top: 0.1mm !important;
-                margin-bottom: 0.1mm !important;
+                font-size: 1.4mm;
+                margin-top: 0.1mm;
+                margin-bottom: 0.1mm;
                 text-align: center;
                 padding-bottom: 0.1mm;
             }
         }
-        /* 屏幕预览样式（同步调整） */
+        /* 屏幕预览样式 */
         .title {
             font-size: 5mm;
             font-weight: bold;
