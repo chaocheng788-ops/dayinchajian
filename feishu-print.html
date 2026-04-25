@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>莫比乌斯素金镯标签 (最终稳定版 v2.3)</title>
+    <title>莫比乌斯素金镯标签 (最终平衡版)</title>
     <script src="lark-sdk.umd.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
@@ -16,7 +16,6 @@
             font-family: 'Arial', 'Microsoft YaHei', sans-serif;
             padding: 20px;
         }
-        /* 预览放大 */
         .label-card {
             width: 125mm;
             height: 150mm;
@@ -29,7 +28,6 @@
             border-radius: 4px;
             page-break-after: avoid;
         }
-        /* 打印样式：竖版 25mm × 30mm，紧凑舒适 */
         @media print {
             body {
                 background: none;
@@ -39,7 +37,7 @@
             .label-card {
                 box-shadow: none;
                 margin: 0;
-                padding: 1mm 1.2mm;
+                padding: 1mm 1.5mm 1mm 2mm;  /* 左内边距增加，整体右移 */
                 width: 25mm;
                 height: 30mm;
                 page-break-after: always;
@@ -55,33 +53,35 @@
             }
             .no-print { display: none !important; }
             .title {
-                font-size: 2.2mm !important;
+                font-size: 2.4mm !important;    /* 字号稍大 */
                 font-weight: bold;
                 text-align: center;
                 border-bottom: none !important;
                 padding-bottom: 0.1mm !important;
-                margin-bottom: 0.3mm !important;
+                margin-bottom: 0.4mm !important;
             }
             .info-list {
-                font-size: 1.8mm !important;
-                line-height: 1.15 !important;
+                font-size: 2.0mm !important;    /* 字号加大 */
+                line-height: 1.2 !important;
             }
             .info-row {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 0.25mm !important;
-                padding: 0 0.3mm;
+                margin-bottom: 0.35mm !important;  /* 行间距加大 */
+                padding: 0 0.5mm;
             }
             .info-label {
                 font-weight: 600;
-                padding-left: 0.5mm !important;
+                padding-left: 0.8mm !important;   /* 向右偏移 */
+                letter-spacing: -0.1mm;
             }
             .info-value {
                 text-align: right;
-                padding-right: 0.5mm !important;
+                padding-right: 0.8mm !important;
             }
+            /* 压缩字段名与值之间的空白：利用flex，但已通过padding减少空隙 */
             .barcode-area {
-                margin-top: 0.1mm !important;
+                margin-top: 0.2mm !important;      /* 稍微增加顶部间距，利用空白 */
                 padding-top: 0mm !important;
                 border-top: 0.1mm dashed #aaa !important;
                 text-align: center !important;
@@ -95,43 +95,43 @@
                 margin: 0 auto;
             }
             .barcode-number {
-                font-size: 1.3mm !important;
-                margin-top: 0.05mm !important;
+                font-size: 1.4mm !important;
+                margin-top: 0.1mm !important;
                 margin-bottom: 0.1mm !important;
                 text-align: center;
                 padding-bottom: 0.1mm;
             }
         }
-        /* 屏幕预览样式 */
+        /* 屏幕预览样式（同步调整） */
         .title {
-            font-size: 4.5mm;
+            font-size: 5mm;
             font-weight: bold;
             text-align: center;
             border-bottom: none;
             padding-bottom: 0.5mm;
-            margin-bottom: 1mm;
+            margin-bottom: 1.2mm;
         }
         .info-list {
             flex: 1;
-            font-size: 3.2mm;
-            line-height: 1.3;
+            font-size: 3.6mm;
+            line-height: 1.35;
         }
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.8mm;
-            padding: 0 0.5mm;
+            margin-bottom: 1mm;
+            padding: 0 1mm;
         }
-        .info-label { font-weight: 600; color: #2c3e50; padding-left: 0.5mm; }
-        .info-value { color: #0b1f33; text-align: right; padding-right: 0.5mm; }
+        .info-label { font-weight: 600; color: #2c3e50; padding-left: 1mm; }
+        .info-value { color: #0b1f33; text-align: right; padding-right: 1mm; }
         .barcode-area {
-            margin-top: 1mm;
+            margin-top: 1.2mm;
             text-align: center;
             border-top: 0.3mm dashed #aaa;
             padding-top: 0.8mm;
         }
         .barcode-area svg { width: auto; max-width: 90%; height: auto; max-height: 7mm; }
-        .barcode-number { font-size: 2.2mm; text-align: center; margin-top: 0.3mm; color: #555; }
+        .barcode-number { font-size: 2.5mm; text-align: center; margin-top: 0.4mm; color: #555; }
         .btn-group {
             position: fixed;
             top: 20px;
@@ -175,8 +175,6 @@
     <div id="labelsContainer"></div>
 
     <script>
-        // 版本标识
-        console.log("莫比乌斯素金镯标签 v2.3 - 打印优化版");
         let selectedRecordsData = [];
         function showError(msg) {
             const errDiv = document.getElementById('errorTip');
