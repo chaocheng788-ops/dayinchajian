@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>莫比乌斯素金镯标签 (最终参数版)</title>
+    <title>莫比乌斯素金镯标签 (条码宽21.5mm)</title>
     <script src="lark-sdk.umd.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
@@ -37,7 +38,7 @@
             .label-card {
                 box-shadow: none;
                 margin: 0;
-                padding: 1mm 1.5mm 1mm 2.5mm;  /* 左内边距2.5mm */
+                padding: 1mm 1.5mm 1mm 2.5mm;
                 width: 25mm;
                 height: 30mm;
                 page-break-after: always;
@@ -52,23 +53,22 @@
                 page-orientation: portrait;
             }
             .no-print { display: none !important; }
-            /* 所有文字字体统一 2.2mm */
             .title {
                 font-size: 2.2mm !important;
                 font-weight: bold;
                 text-align: center;
                 border-bottom: none !important;
                 padding-bottom: 0.1mm !important;
-                margin-bottom: 2.7mm !important;  /* 标题到第一个字段的间距保持2.7mm */
+                margin-bottom: 1mm !important;
             }
             .info-list {
-                font-size: 2.2mm !important;     /* 与标题同字号 */
+                font-size: 2.2mm !important;
                 line-height: 1.2 !important;
             }
             .info-row {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 1mm !important;    /* 字段行距 1mm */
+                margin-bottom: 1mm !important;
                 padding: 0 0.5mm;
             }
             .info-label {
@@ -79,7 +79,6 @@
                 text-align: right;
                 padding-right: 0.8mm !important;
             }
-            /* 条码上方间距改为 1mm */
             .barcode-area {
                 margin-top: 1mm !important;
                 padding-top: 0mm !important;
@@ -87,29 +86,29 @@
                 text-align: center !important;
             }
             .barcode-area svg {
-                max-width: 60% !important;
-                max-height: 6.2mm !important;
-                width: auto !important;
+                width: 21.5mm !important;        /* 固定宽度 21.5mm */
+                max-width: 21.5mm !important;
                 height: auto !important;
+                max-height: 6.2mm !important;
                 display: block;
                 margin: 0 auto;
             }
             .barcode-number {
-                font-size: 1.4mm !important;
-                margin-top: 0.2mm !important;
+                font-size: 1.5mm !important;
+                margin-top: 1mm !important;
                 margin-bottom: 0.1mm !important;
                 text-align: center;
                 padding-bottom: 0.1mm;
             }
         }
-        /* 屏幕预览样式（同步比例） */
+        /* 屏幕预览同步比例（预览时条码宽度按比例放大） */
         .title {
             font-size: 5mm;
             font-weight: bold;
             text-align: center;
             border-bottom: none;
             padding-bottom: 0.5mm;
-            margin-bottom: 2.7mm;
+            margin-bottom: 1mm;
         }
         .info-list {
             flex: 1;
@@ -130,8 +129,13 @@
             border-top: none;
             padding-top: 0.8mm;
         }
-        .barcode-area svg { width: auto; max-width: 60%; height: auto; max-height: 7mm; }
-        .barcode-number { font-size: 2.5mm; text-align: center; margin-top: 0.4mm; color: #555; }
+        .barcode-area svg {
+            width: auto;
+            max-width: 90%;
+            height: auto;
+            max-height: 7mm;
+        }
+        .barcode-number { font-size: 2.5mm; text-align: center; margin-top: 1mm; color: #555; }
         .btn-group {
             position: fixed;
             top: 20px;
@@ -269,7 +273,7 @@
                         try {
                             JsBarcode(`#${item.id}`, item.code, {
                                 format: "CODE128",
-                                width: 0.5,
+                                width: 1.8,          // 调整线条宽度以适应21.5mm长度（原0.5对应~15mm，现1.8对应~21.5mm）
                                 height: 18,
                                 displayValue: false,
                                 fontSize: 2,
